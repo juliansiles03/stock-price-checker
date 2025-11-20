@@ -3,7 +3,7 @@ require("dotenv").config();
 const express = require("express");
 const bodyParser = require("body-parser");
 const cors = require("cors");
-const helmet = require("helmet");   // ← Seguridad agregada
+const helmet = require("helmet");
 
 const apiRoutes = require("./routes/api.js");
 const fccTestingRoutes = require("./routes/fcctesting.js");
@@ -11,46 +11,45 @@ const runner = require("./test-runner");
 
 const app = express();
 
-// 🛡️ CONTENT SECURITY POLICY (Requisito de FreeCodeCamp)
+// 🛡️ 1) CONTENT SECURITY POLICY — versión compatible con FCC
 app.use(
-  helmet({
-    contentSecurityPolicy: {
-      useDefaults: true,
-      directives: {
-        "script-src": ["'self'"],
-        "style-src": ["'self'"],
-      },
+  helmet.contentSecurityPolicy({
+    directives: {
+      defaultSrc: ["'self'"],
+      scriptSrc: ["'self'", "'unsafe-inline'"],
+      styleSrc: ["'self'", "'unsafe-inline'"],
     },
   })
 );
 
-// Archivos estáticos
+// 2) Archivos estáticos
 app.use("/public", express.static(process.cwd() + "/public"));
 
-// CORS (FCC lo requiere abierto)
+// 3) CORS (FCC requiere acceso abierto)
 app.use(cors({ origin: "*" }));
 
+// 4) Body parser
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
-// Página de inicio
+// 5) Página de inicio
 app.route("/").get(function (req, res) {
   res.sendFile(process.cwd() + "/views/index.html");
 });
 
-// Rutas para tests FCC
+// 6) Rutas de pruebas FCC
 fccTestingRoutes(app);
 
-// Rutas API
+// 7) Rutas de la API
 apiRoutes(app);
 
-// Middleware 404
-app.use(function (req, res, next) {
+// 8) Middleware 404
+app.use(function (req, res) {
   res.status(404).type("text").send("Not Found");
 });
 
-// Iniciar servidor
-const listener = app.listen(process.env.PORT || 3000, function () {
+// ⭐ 9) Iniciar servidor — Render requiere "0.0.0.0"
+const listener = app.listen(process.env.PORT || 3000, "0.0.0.0", function () {
   console.log("Your app is listening on port " + listener.address().port);
 
   if (process.env.NODE_ENV === "test") {
