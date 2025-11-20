@@ -22,8 +22,9 @@ app.use(
   })
 );
 
-// 2) Archivos estáticos
+// 2) Archivos estáticos (FCC requiere /tests)
 app.use("/public", express.static(process.cwd() + "/public"));
+app.use("/tests", express.static(process.cwd() + "/tests")); // ⭐ NECESARIO PARA FCC
 
 // 3) CORS (FCC requiere acceso abierto)
 app.use(cors({ origin: "*" }));
@@ -48,7 +49,7 @@ app.use(function (req, res) {
   res.status(404).type("text").send("Not Found");
 });
 
-// ⭐ 9) Iniciar servidor — Render requiere "0.0.0.0"
+// ⭐ 9) Iniciar servidor (Render requiere 0.0.0.0)
 const listener = app.listen(process.env.PORT || 3000, "0.0.0.0", function () {
   console.log("Your app is listening on port " + listener.address().port);
 
