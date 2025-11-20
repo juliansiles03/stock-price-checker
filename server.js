@@ -11,7 +11,7 @@ const runner = require("./test-runner");
 
 const app = express();
 
-// 🛡️ 1) CSP COMPATIBLE CON FCC (pasa test #2 y permite correr test #7)
+// 🛡️ 1) CSP COMPATIBLE CON FCC
 app.use(
   helmet({
     contentSecurityPolicy: {
@@ -27,21 +27,22 @@ app.use(
 
 // 2) Archivos estáticos
 app.use("/public", express.static(process.cwd() + "/public"));
-app.use("/tests", express.static(process.cwd() + "/tests")); // requerido por FCC
+app.use("/tests", express.static(process.cwd() + "/tests")); // Requerido por FCC
 
-// 3) CORS abierto para FCC
+// 3) CORS (FCC lo requiere)
 app.use(cors({ origin: "*" }));
 
 // 4) Body parser
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
-// 5) Página principal
-app.route("/").get(function (req, res) {
+// ⭐ 5) Home — FORZAMOS NO CACHE PARA EVITAR 304
+app.get("/", function (req, res) {
+  res.set("Cache-Control", "no-store");  // ⭐ Clave para que FCC lea la CSP
   res.sendFile(process.cwd() + "/views/index.html");
 });
 
-// 6) Rutas de FCC
+// 6) Rutas FCC
 fccTestingRoutes(app);
 
 // 7) Rutas de la API
@@ -52,7 +53,7 @@ app.use(function (req, res) {
   res.status(404).type("text").send("Not Found");
 });
 
-// ⭐ 9) Servidor (Render requiere host 0.0.0.0)
+// ⭐ 9) Servidor (Render necesita host 0.0.0.0)
 const listener = app.listen(
   process.env.PORT || 3000,
   "0.0.0.0",
